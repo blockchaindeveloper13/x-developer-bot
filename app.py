@@ -9,20 +9,23 @@ api_secret = os.getenv("X_SECRET_KEY")
 access_token = os.getenv("X_ACCESS_TOKEN")
 access_secret = os.getenv("X_ACCESS_SECRET")
 
-# Tweepy OAuth 1.0a ile kimlik doğrulama
-auth = tweepy.OAuthHandler(api_key, api_secret)
-auth.set_access_token(access_token, access_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True)
+# Tweepy Client (v2 için)
+client = tweepy.Client(
+    consumer_key=api_key,
+    consumer_secret=api_secret,
+    access_token=access_token,
+    access_token_secret=access_secret
+)
 
 def post_deneme_tweet():
     try:
         print(f"{datetime.now()}: Kullanıcı bilgilerini çekiyor...")
-        user = api.verify_credentials()
-        print(f"{datetime.now()}: Kullanıcı: {user.screen_name}")
+        user = client.get_me()
+        print(f"{datetime.now()}: Kullanıcı: {user.data.username}")
 
         tweet_text = f"Deneme tweet'i! #BAETrends"
         print(f"{datetime.now()}: Tweet atılıyor: {tweet_text}")
-        api.update_status(status=tweet_text)
+        client.create_tweet(text=tweet_text)
         print(f"{datetime.now()}: Tweet atıldı: {tweet_text}")
     except Exception as e:
         print(f"{datetime.now()}: Hata oluştu: {str(e)}")
