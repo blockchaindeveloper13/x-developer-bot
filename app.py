@@ -35,13 +35,13 @@ HASHTAGS = " #Solium #Bitcoin #Binance #BSC #BNB #ETH #Altcoin"  # 50 karakter
 MAX_TWEET_LENGTH = 280
 MAX_CONTENT_LENGTH = MAX_TWEET_LENGTH - len(HASHTAGS) - 1  # 230 karakter
 
-# Fallback Messages
+# Fallback Messages (Türkçe oranı %30)
 FALLBACK_TWEETS = [
-    "Solium Coin: Web3 technology meets community governance. Stake your SLM today! 🚀",
+    "Solium Coin: Web3 tech meets community governance. Stake your SLM today! 🚀",
     "Join Solium's decentralized revolution. DAO voting now live! 🌐",
     "Solium Coin ile merkeziyetsiz geleceğin parçası olun! ⚡",
     "Cross-chain swaps with Solium: Fast, secure, low fee. Try now! 💎",
-    "Solium's new roadmap update is out! Check our website for details. 🚀"
+    "Solium ile Web3’ün özgürlük ateşine katıl! Stake SLM, geleceği inşa et! 💖"
 ]
 
 # Banned phrases
@@ -57,12 +57,11 @@ def grok_generate_content():
     system_prompt = """
     You are a content generator for Solium Coin (SLM). Strict rules:
     - Language: English (70%) or Turkish (30%)
-    - Length: Exactly 230 characters (before hashtags)
-    - Focus: Solium’s story as 'The Spark of a Web3 Love,' highlighting Web3, staking, DAO, blockchain tech, and community
-    - Story: Solium: The Spark of a Web3 Love
-      Every great revolution begins with passion. Solium (SLM) was born from the spark of a platonic love. A man would sacrifice worlds just to catch a fleeting glimpse of a woman’s smile, but his love went unreturned. This bittersweet yet inspiring tale drove him to ignite the fire of Web3 freedom. Solium breaks the chains of centralized systems, building bridges between BSC and Solana for fast, secure transactions. #SoliumArmy keeps this love alive through DAO: everyone stakes, votes, and shapes the future. Inspired by Dubai’s luxurious spirit, Solium makes Web3 free and passionate for all. Join this love story: “Build the future with SLM!”
+    - Length: Exactly 230 characters (before hashtags), strictly enforce this
+    - Focus: Solium’s story as 'The Spark of a Web3 Love,' highlighting Web3, staking, DAO, blockchain tech, community
+    - Story: Solium (SLM) was born from a platonic love. A man’s unreturned passion sparked Web3 freedom. Solium connects BSC & Solana for fast, secure transactions. #SoliumArmy shapes the future via DAO, inspired by Dubai’s luxury. Join: “Build with SLM!”
     - Tone: Professional, inspiring, romantic, community-driven, inspired by meme coin vibes
-    - Use 1-2 relevant emojis (🚀, ⚡, 🌐, 💎, 💖, 🔥)
+    - Use 1-2 emojis (🚀, ⚡, 🌐, 💎, 💖, 🔥)
     - Must include 'Solium' or 'SLM'
     - Include a call-to-action in 60% of tweets (e.g., 'Join presale: soliumcoin.com' or 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
     - Avoid: Price talk, financial advice, hype language like 'moon' or 'pump'
@@ -75,8 +74,8 @@ def grok_generate_content():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": "Generate a 230-character tweet about Solium's story and technology"}
             ],
-            max_tokens=230,
-            temperature=0.9
+            max_tokens=200,  # 230’a sığması için marj
+            temperature=0.7  # Daha tutarlı çıktılar
         )
         content = completion.choices[0].message.content.strip()
         # Detaylı hata ayıklama
@@ -86,17 +85,20 @@ def grok_generate_content():
         if len(content) > 230:
             logging.error(f"Grok error: Content too long ({len(content)} chars): {content}")
             raise ValueError("Content too long")
+        if len(content) < 230:
+            logging.warning(f"Grok warning: Content too short ({len(content)} chars): {content}")
+            content = content + " " * (230 - len(content))  # 230’a tamamla
         if not is_safe_tweet(content):
             logging.error(f"Grok error: Content contains banned phrases: {content}")
             raise ValueError("Content contains banned phrases")
         if "Solium" not in content and "SLM" not in content:
             logging.error(f"Grok error: Content missing 'Solium' or 'SLM': {content}")
             raise ValueError("Content missing 'Solium' or 'SLM'")
-        return content[:230]
+        return content
     except Exception as e:
         logging.error(f"Grok error: {e}")
         return None
-        
+
 def post_tweet():
     """Post a single tweet with error handling."""
     try:
@@ -104,6 +106,12 @@ def post_tweet():
         content = grok_generate_content()
         if not content:
             content = random.choice([t for t in FALLBACK_TWEETS if is_safe_tweet(t)])
+        
+        # Add CTA
+        if random.random() < 0.6:  # %60 CTA
+            content = content[:200] + " Join presale: soliumcoin.com! 💖"
+        elif random.random() < 0.3:  # %30 Telegram
+            content = content[:190] + " Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0! 🔥"
         
         # Compose final tweet
         tweet_text = f"{content}{HASHTAGS}"
@@ -124,18 +132,17 @@ def post_tweet():
         return False
 
 def run_daily_tweets():
-    """Run 10 tweets per day with equal intervals."""
+    """Run 4 tweets per day with equal intervals."""
     tweets_posted = 0
     first_run = True
     
-    while tweets_posted < 10:
+    while tweets_posted < 4:
         if first_run or post_tweet():
             tweets_posted += 1
             first_run = False
             
-            if tweets_posted < 10:
-                # Calculate sleep time for equal intervals (86400s/10 = 8640s = 2.4h)
-                sleep_time = 8640 + random.randint(-600, 600)  # Add some randomness
+            if tweets_posted < 4:
+                sleep_time = 21600 + random.randint(-1800, 1800)  # 6 saat ± 30 dakika
                 logging.info(f"Next tweet in {sleep_time//3600}h {(sleep_time%3600)//60}m")
                 time.sleep(sleep_time)
                 
@@ -144,9 +151,14 @@ def run_daily_tweets():
 def main():
     logging.info("Solium Bot starting...")
     
-    # Immediate first tweet
-    logging.info("Posting initial tweet...")
-    post_tweet()
+    # Immediate first tweet with story
+    logging.info("Posting initial story tweet...")
+    initial_tweet = "Solium: Born from a platonic love, sparking Web3 freedom! Stake SLM, join the DAO, build with passion! 💖 Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0 #Solium #Bitcoin #Binance #BSC #BNB #ETH #Altcoin"
+    try:
+        client_x.create_tweet(text=initial_tweet)
+        logging.info(f"Initial tweet posted: {initial_tweet[:60]}...")
+    except Exception as e:
+        logging.error(f"Initial tweet failed: {e}")
     
     # Start daily cycle
     while True:
