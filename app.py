@@ -58,36 +58,34 @@ def grok_generate_content():
     You are a content generator for Solium Coin (SLM). Strict rules:
     - Language: English (70%) or Turkish (30%)
     - Length: Exactly 230 characters (before hashtags)
-    - Focus: Web3, staking, DAO, blockchain tech
-    - Use 1-2 relevant emojis (🚀, ⚡, 🌐, 💎)
-    - Must include "Solium" or "SLM"
-    - Avoid: Price talk, financial advice, hype language
-    - Tone: Professional but engaging
-    Example: "Solium's new bridge connects BSC and Solana networks. Transfer SLM with 80% lower fees! ⚡"
+    - Focus: Solium’s story as 'The Spark of a Web3 Love,' highlighting Web3, staking, DAO, blockchain tech, and community
+    - Story: Solium: The Spark of a Web3 Love
+      Every great revolution begins with passion. Solium (SLM) was born from the spark of a platonic love. A man would sacrifice worlds just to catch a fleeting glimpse of a woman’s smile, but his love went unreturned. This bittersweet yet inspiring tale drove him to ignite the fire of Web3 freedom. Solium breaks the chains of centralized systems, building bridges between BSC and Solana for fast, secure transactions. #SoliumArmy keeps this love alive through DAO: everyone stakes, votes, and shapes the future. Inspired by Dubai’s luxurious spirit, Solium makes Web3 free and passionate for all. Join this love story: “Build the future with SLM!”
+    - Tone: Professional, inspiring, romantic, community-driven, inspired by meme coin vibes
+    - Use 1-2 relevant emojis (🚀, ⚡, 🌐, 💎, 💖, 🔥)
+    - Must include 'Solium' or 'SLM'
+    - Include a call-to-action in 60% of tweets (e.g., 'Join presale: soliumcoin.com' or 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
+    - Avoid: Price talk, financial advice, hype language like 'moon' or 'pump'
+    - Example: "Solium: Born from a platonic love, sparking Web3 freedom! Stake SLM, join the DAO, build with passion! 💖 Join presale: soliumcoin.com"
     """
-    
     try:
         completion = client_grok.chat.completions.create(
             model="grok-3",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Generate a 230-character tweet about Solium's technology"}
+                {"role": "user", "content": "Generate a 230-character tweet about Solium's story and technology"}
             ],
             max_tokens=230,
-            temperature=0.7
+            temperature=0.9  # Romantik ve yaratıcı ton için
         )
         content = completion.choices[0].message.content.strip()
-        
-        # Validation
         if not content or len(content) > 230 or not is_safe_tweet(content):
             raise ValueError("Invalid content generated")
-            
-        return content[:230]  # Hard cut at 230 chars
-    
+        return content[:230]
     except Exception as e:
         logging.error(f"Grok error: {e}")
         return None
-
+        
 def post_tweet():
     """Post a single tweet with error handling."""
     try:
