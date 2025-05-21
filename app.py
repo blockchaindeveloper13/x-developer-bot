@@ -153,7 +153,7 @@ def main():
     
     # Immediate first tweet with story
     logging.info("Posting initial story tweet...")
-    initial_tweet = "Solium: Born from a platonic love, sparking Web3 freedom! Stake SLM, join the DAO, build with passion! 💖 Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0 #Solium #Bitcoin #Binance #BSC #BNB #ETH #Altcoin"
+    initial_tweet = "Solium: Born from a platonic love, sparking Web3 freedom! Stake SLM, join the DAO, build with passion! 💖 Join #SoliumArmy: t.me/soliumcoinchat #Solium #Bitcoin #Binance #BSC #BNB #ETH #Altcoin"
     try:
         client_x.create_tweet(text=initial_tweet)
         logging.info(f"Initial tweet posted: {initial_tweet[:60]}...")
