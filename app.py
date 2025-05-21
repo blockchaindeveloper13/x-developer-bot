@@ -2,11 +2,9 @@ import tweepy
 import os
 import time
 import random
-import requests
 import logging
-from datetime import datetime, timezone
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from datetime import datetime, timezone, timedelta
+from openai import OpenAI
 
 # Logging setup
 logging.basicConfig(
@@ -18,21 +16,19 @@ logging.basicConfig(
     ]
 )
 
-# Twitter API v1.1 Authentication
-auth = tweepy.OAuth1UserHandler(
+# Twitter API v2 Client
+client_x = tweepy.Client(
     consumer_key=os.getenv("X_API_KEY"),
     consumer_secret=os.getenv("X_SECRET_KEY"),
     access_token=os.getenv("X_ACCESS_TOKEN"),
     access_token_secret=os.getenv("X_ACCESS_SECRET")
 )
-api = tweepy.API(auth, wait_on_rate_limit=True)
 
-# Grok API Configuration
-GROK_API_URL = "https://api.grok.ai/v1/generate"
-GROK_HEADERS = {
-    "Authorization": f"Bearer {os.getenv('GROK_API_KEY')}",
-    "Content-Type": "application/json"
-}
+# OpenAI (Grok) Client
+client_grok = OpenAI(
+    api_key=os.getenv("GROK_API_KEY"),
+    base_url="https://api.x.ai/v1"
+)
 
 # Constants
 HASHTAGS = " #Solium #Bitcoin #Binance #BSC #BNB #ETH #Altcoin"  # 50 karakter
@@ -71,23 +67,16 @@ def grok_generate_content():
     """
     
     try:
-        session = requests.Session()
-        retries = Retry(total=3, backoff_factor=1, 
-                       status_forcelist=[429, 500, 502, 503, 504])
-        session.mount('https://', HTTPAdapter(max_retries=retries))
-        
-        response = session.post(
-            GROK_API_URL,
-            headers=GROK_HEADERS,
-            json={
-                "prompt": f"{system_prompt}\n\nGenerate a 230-character tweet about Solium's technology:",
-                "max_length": 230,
-                "temperature": 0.7
-            },
-            timeout=15
+        completion = client_grok.chat.completions.create(
+            model="grok-3",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": "Generate a 230-character tweet about Solium's technology"}
+            ],
+            max_tokens=230,
+            temperature=0.7
         )
-        
-        content = response.json().get("text", "").strip()
+        content = completion.choices[0].message.content.strip()
         
         # Validation
         if not content or len(content) > 230 or not is_safe_tweet(content):
@@ -110,8 +99,8 @@ def post_tweet():
         # Compose final tweet
         tweet_text = f"{content}{HASHTAGS}"
         
-        # Post tweet
-        api.update_status(tweet_text)
+        # Post tweet using v2 API
+        client_x.create_tweet(text=tweet_text)
         logging.info(f"Tweet posted: {tweet_text[:60]}...")
         
         return True
