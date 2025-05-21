@@ -76,11 +76,22 @@ def grok_generate_content():
                 {"role": "user", "content": "Generate a 230-character tweet about Solium's story and technology"}
             ],
             max_tokens=230,
-            temperature=0.9  # Romantik ve yaratıcı ton için
+            temperature=0.9
         )
         content = completion.choices[0].message.content.strip()
-        if not content or len(content) > 230 or not is_safe_tweet(content):
-            raise ValueError("Invalid content generated")
+        # Detaylı hata ayıklama
+        if not content:
+            logging.error("Grok error: Content is empty")
+            raise ValueError("Content is empty")
+        if len(content) > 230:
+            logging.error(f"Grok error: Content too long ({len(content)} chars): {content}")
+            raise ValueError("Content too long")
+        if not is_safe_tweet(content):
+            logging.error(f"Grok error: Content contains banned phrases: {content}")
+            raise ValueError("Content contains banned phrases")
+        if "Solium" not in content and "SLM" not in content:
+            logging.error(f"Grok error: Content missing 'Solium' or 'SLM': {content}")
+            raise ValueError("Content missing 'Solium' or 'SLM'")
         return content[:230]
     except Exception as e:
         logging.error(f"Grok error: {e}")
