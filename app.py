@@ -42,7 +42,7 @@ except Exception as e:
     raise
 
 # Constants
-HASHTAGS = " #Solium #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina"  # 94 karakter
+HASHTAGS = " #Solium #bitcoin #Web3 #DeFi #Crypto #Blockchain #Binance #bitget #mexc #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina" 
 MAX_TWEET_LENGTH = 1100
 MIN_CONTENT_LENGTH = 800
 MAX_CONTENT_LENGTH = 1000
