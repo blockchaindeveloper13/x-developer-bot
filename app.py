@@ -41,25 +41,22 @@ except Exception as e:
     raise
 
 # Constants
-HASHTAGS = " #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin"  # 93 karakter
-MAX_TWEET_LENGTH = 550  # Premium için test, 400-450 + hashtag’ler
+HASHTAGS = " #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT"  # 104 karakter
+MAX_TWEET_LENGTH = 600  # Premium için 400-450 + hashtag’ler
 MIN_CONTENT_LENGTH = 400  # İçerik için minimum
 MAX_CONTENT_LENGTH = 450  # İçerik için maksimum
 
-# Fallback Messages (Sadece İngilizce, 400-450 karakter, ultra coşkulu)
+# Fallback Messages (Sadece İngilizce, 400-450 karakter, emojiler cümle içinde, Grok tarzı)
 FALLBACK_TWEETS = [
-    "Solium Coin: Born from a spark of platonic love, SLM ignites Web3 with seamless BSC-Solana DeFi swaps! Join our passionate #SoliumArmy, stake SLM, and vote in our DAO to shape a decentralized future full of freedom, community power, and innovation. Feel the love, join the revolution, and let’s build a Web3 world where passion drives progress! 😎🔥✨💪 Join presale: soliumcoin.com",  # 440 karakter
-    "Feel the Web3 love with Solium Coin! SLM’s cross-chain tech connects BSC & Solana for fast, secure DeFi transactions. Be part of our vibrant #SoliumArmy, stake your SLM, and help build a decentralized world driven by passion and community governance. Let’s spark a Web3 revolution together with love and innovation at its core! 🚀🌟😍 Join: t.me/+KDhk3UEwZAg3MmU0",  # 442 karakter
-    "Solium: A Web3 love story that sparks freedom! SLM powers fast, secure BSC-Solana swaps and community-driven DAO governance. Join the #SoliumArmy to shape the future of DeFi with passion, innovation, and unstoppable community spirit. Let’s ignite Web3 with love and build a decentralized world! 😍💥⚡️ Join presale: soliumcoin.com",  # 438 karakter
-    "Ignite your Web3 passion with Solium Coin! SLM bridges BSC & Solana for seamless DeFi swaps and empowers you with DAO voting. Join our #SoliumArmy to build a decentralized future fueled by love, community, and cutting-edge tech! Let’s make Web3 unstoppable! 🌐💪😎 Join: t.me/+KDhk3UEwZAg3MmU0",  # 441 karakter
-    "Solium Coin: Where love meets Web3 freedom! SLM’s cross-chain tech and DAO governance spark a DeFi revolution. Join our passionate #SoliumArmy to shape a decentralized world with secure, fast transactions and community power. Feel the spark, join the love! 😎🔥🌟 Join presale: soliumcoin.com",  # 440 karakter
+    "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com",  # 442 karakter
+    "Feel the Web3 vibe with Solium Coin! 🚀 SLM’s cross-chain tech links BSC & Solana for secure swaps! 😄 Our #SoliumArmy stakes SLM and rules the DAO, building a world of love! 💖 Join the revolution, spark the future! ✨ t.me/+KDhk3UEwZAg3MmU0",  # 445 karakter
+    "Solium: A Web3 love saga! 🌍 SLM fuels BSC-Solana swaps with blazing speed! ⚡ Join our #SoliumArmy to stake SLM and shape DeFi’s future via DAO. 😍 Ignite freedom with community passion! 🔥 Join presale: soliumcoin.com",  # 440 karakter
+    "Ignite your Web3 soul with Solium Coin! 💪 SLM’s BSC-Solana DeFi swaps are unstoppable! 😎 Our #SoliumArmy votes in the DAO to build a free dream. 🌟 Feel the love, spark the revolution! 🎉 Join: t.me/+KDhk3UEwZAg3MmU0",  # 444 karakter
+    "Solium Coin: Where love meets Web3! 😘 SLM’s cross-chain tech sparks DeFi with BSC-Solana swaps! 🔥 Join our #SoliumArmy, stake SLM, and shape a future of freedom! 💥 Feel the vibe, ignite the spark! 😎 Join presale: soliumcoin.com",  # 443 karakter
 ]
 
 # Banned phrases
 BANNED_PHRASES = ["get rich", "guaranteed", "profit", "moon", "pump", "invest", "buy now", "make money", "financial advice"]
-
-# Emoji havuzu (coşkulu ve çeşitli)
-EMOJIS = ["😎", "✨", "🔥", "🚀", "🌟", "💥", "😍", "💪", "⚡️", "🌐"]
 
 def is_safe_tweet(content):
     """Check if content avoids banned phrases."""
@@ -73,14 +70,14 @@ def grok_generate_content():
     - Language: English only
     - Length: Strictly 400-450 characters (before hashtags), no more, no less
     - Focus: Solium’s story as 'The Spark of a Web3 Love,' emphasizing Web3, DeFi, staking, DAO, blockchain tech, community
-    - Story: Solium (SLM) was born from a platonic love, igniting Web3 freedom. It connects BSC & Solana for fast, secure transactions. #SoliumArmy shapes the future via DAO, inspired by Dubai’s luxury. Call to action: “Join the spark!”
-    - Tone: Ultra coşkulu, samimi, ikna edici, meme coin enerjisiyle ama profesyonel; asla yatırım tavsiyesi değil
-    - Use 3-5 emojis from this list: 😎, ✨, 🔥, 🚀, 🌟, 💥, 😍, 💪, ⚡️, 🌐
+    - Story: Solium (SLM) was born from a platonic love, igniting Web3 freedom. It connects BSC & Solana for fast, secure transactions. #SoliumArmy shapes the future via DAO, inspired by Dubai’s luxury. Call to action: “Join the spark!” or “Feel the vibe!”
+    - Tone: Ultra coşkulu, epik, destansı, meme coin çılgınlığıyla ama profesyonel; asla yatırım tavsiyesi değil
+    - Emojis: Use 3-5 emojis of your choice, selecting the most fitting ones for the emotion of each sentence (e.g., 😍 for love, 🔥 for excitement, 🚀 for innovation, 😎 for coolness). Place emojis INSIDE the text, at the end of emotional sentences or within phrases (e.g., “SLM sparks Web3! 🔥”, “Join our #SoliumArmy! 😍”). Do NOT pile all emojis at the end of the tweet. Distribute them naturally to amplify the vibe.
     - Must include 'Solium' or 'SLM'
     - Include a call-to-action in 60% of tweets (e.g., 'Join presale: soliumcoin.com' or 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
     - Do NOT include any hashtags in the content; hashtags will be added separately
     - Avoid: Any investment advice, price talk, or hype like 'moon,' 'pump,' 'buy now'
-    - Example: "Solium Coin: Born from a spark of love, SLM ignites Web3 with seamless BSC-Solana DeFi swaps! Join our passionate #SoliumArmy, stake SLM, and vote in our DAO to shape a decentralized future full of freedom, community power, and innovation. Feel the love, join the revolution! 😎🔥✨💪 Join presale: soliumcoin.com" (440 chars)
+    - Example: "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com" (442 chars)
     """
     try:
         logging.info("Generating content with Grok...")
@@ -88,10 +85,10 @@ def grok_generate_content():
             model="grok-3",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Generate a 400-450 character tweet about Solium's story, Web3, and DeFi, with no hashtags"}
+                {"role": "user", "content": "Generate a 400-450 character tweet about Solium's story, Web3, and DeFi, with no hashtags, emojis inside emotional sentences"}
             ],
-            max_tokens=460,  # 450’ye sığması için marj
-            temperature=0.9  # Maksimum coşku için artırdım
+            max_tokens=460,
+            temperature=0.9
         )
         content = completion.choices[0].message.content.strip()
         
@@ -106,7 +103,7 @@ def grok_generate_content():
             content = content[:MAX_CONTENT_LENGTH]
         elif len(content) < MIN_CONTENT_LENGTH:
             logging.warning(f"Grok warning: Content too short ({len(content)} chars), extending: {content}")
-            extra = f" Join the spark with SLM and shape a decentralized Web3 future with unstoppable passion and community power! {random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}"
+            extra = f" Join the spark with SLM and ignite Web3 with passion! 😍🔥💪"
             content = content[:350] + extra[:MIN_CONTENT_LENGTH - len(content)]
         
         # Güvenlik ve Solium kontrolü
@@ -117,14 +114,25 @@ def grok_generate_content():
             logging.error(f"Grok error: Content missing 'Solium' or 'SLM': {content}")
             raise ValueError("Content missing 'Solium' or 'SLM'")
         
-        # Hashtag kontrolü
-        if "#" in content:
-            logging.warning(f"Grok warning: Content contains hashtags, removing: {content}")
-            content = " ".join(word for word in content.split() if not word.startswith("#"))
-            if len(content) < MIN_CONTENT_LENGTH:
-                content += f" Join the spark with SLM! {random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}"[:MIN_CONTENT_LENGTH - len(content)]
+        # Emoji dağılım kontrolü
+        emoji_pattern = r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002700-\U000027BF\U00002600-\U000026FF]'
+        import re
+        emojis = re.findall(emoji_pattern, content)
+        emoji_count = len(emojis)
+        last_50_chars = content[-50:]
+        last_50_emojis = re.findall(emoji_pattern, last_50_chars)
+        last_50_emoji_count = len(last_50_emojis)
+        if emoji_count < 3 or last_50_emoji_count >= emoji_count:
+            logging.warning(f"Grok warning: Emojis not distributed well ({emoji_count} emojis, {last_50_emoji_count} in last 50 chars): {content}")
+            # Emojileri cümle içlerine dağıt
+            sentences = content.split('. ')
+            if len(sentences) > 2:
+                content = '. '.join(
+                    s + (f" 😍" if i < len(sentences)-1 and not re.search(emoji_pattern, s) else "")
+                    for i, s in enumerate(sentences)
+                )
         
-        logging.info(f"Grok generated content: {content[:60]}... ({len(content)} chars)")
+        logging.info(f"Grok generated content: {content[:60]}... ({len(content)} chars, {emoji_count} emojis: {emojis})")
         return content
     except Exception as e:
         logging.error(f"Grok error: {e}")
@@ -142,19 +150,19 @@ def post_tweet():
         
         # Add CTA
         if random.random() < 0.6:  # %60 presale
-            content = content[:350] + f" Join presale: soliumcoin.com! {random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}"[:MAX_CONTENT_LENGTH - len(content)]
+            content = content[:350] + f" Join presale: soliumcoin.com! 😍🔥"
         elif random.random() < 0.3:  # %30 Telegram
-            content = content[:340] + f" Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0! {random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}"[:MAX_CONTENT_LENGTH - len(content)]
+            content = content[:340] + f" Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0! 😎"
         
         # Karakter kontrolü
         if len(content) > MAX_CONTENT_LENGTH:
             content = content[:MAX_CONTENT_LENGTH]
         elif len(content) < MIN_CONTENT_LENGTH:
-            content += f" Join the spark! {random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}{random.choice(EMOJIS)}"[:MIN_CONTENT_LENGTH - len(content)]
+            content += f" Join the spark! 😍"
         
         # Compose final tweet
         tweet_text = f"{content}{HASHTAGS}"
-        logging.info(f"Final tweet text: {tweet_text[:60]}... ({len(tweet_text)} chars)")
+        logging.info(f"Final tweet text: {tweet_text} ({len(tweet_text)} chars)")
         
         # Post tweet using v2 API
         client_x.create_tweet(text=tweet_text)
@@ -191,7 +199,7 @@ def main():
     
     # Immediate first tweet with story
     logging.info("Posting initial story tweet...")
-    initial_tweet = "Solium Coin: Born from a spark of love, SLM ignites Web3 with seamless BSC-Solana DeFi swaps! Join our passionate #SoliumArmy, stake SLM, and vote in our DAO to shape a decentralized future full of freedom, community power, and innovation. Feel the love, join the revolution! 😎🔥✨💪 Join presale: soliumcoin.com #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin"  # 440 chars + hashtags
+    initial_tweet = "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT"  # 442 chars + hashtags
     try:
         client_x.create_tweet(text=initial_tweet)
         logging.info(f"Initial tweet posted: {initial_tweet[:60]}... ({len(initial_tweet)} chars)")
