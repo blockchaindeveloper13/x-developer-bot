@@ -34,10 +34,7 @@ except Exception as e:
 
 # OpenAI (Grok) Client
 try:
-    client_grok = OpenAI(
-        api_key=os.getenv("GROK_API_KEY"),
-        base_url="https://api.x.ai/v1"
-    )
+    client_grok = OpenAI(api_key=os.getenv("GROK_API_KEY"))
     logging.info("Grok client initialized successfully")
 except Exception as e:
     logging.error(f"Failed to initialize Grok client: {e}")
