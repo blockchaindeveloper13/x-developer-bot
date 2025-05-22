@@ -3,9 +3,11 @@ import os
 import time
 import random
 import logging
+import requests
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 import re
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Logging setup
 logging.basicConfig(
@@ -69,28 +71,41 @@ def is_safe_tweet(content):
     return not any(phrase in content_lower for phrase in BANNED_PHRASES)
 
 def check_rate_limit():
-    """Check X API rate limit status."""
+    """Check X API rate limit status using raw API."""
     try:
-        # Note: tweepy.Client doesn't have a direct get_rate_limit_status method
-        # To implement, use raw API call to /2/users/me/rate_limits (requires OAuth 2.0)
-        logging.info("Checking rate limit status (placeholder, implement with raw API if needed)")
-        return True
+        bearer_token = os.getenv('X_BEARER_TOKEN')
+        if not bearer_token:
+            logging.error("X_BEARER_TOKEN not set in environment variables")
+            return None
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+        response = requests.get("https://api.twitter.com/2/rate_limits", headers=headers)
+        if response.status_code == 200:
+            limits = response.json()
+            tweet_limit = limits.get('resources', {}).get('tweets', {}).get('/2/tweets', {})
+            reset_time = datetime.fromtimestamp(tweet_limit.get('reset', time.time()), timezone.utc)
+            reset_time_tr = reset_time.astimezone(timezone(timedelta(hours=3)))  # Türkiye saati
+            logging.info(f"POST /2/tweets rate limit: {tweet_limit}, reset at {reset_time} UTC ({reset_time_tr} Türkiye saati)")
+            return tweet_limit
+        else:
+            logging.error(f"Failed to check rate limit: {response.status_code} {response.text}")
+            return None
     except Exception as e:
         logging.error(f"Failed to check rate limit status: {e}")
-        return False
+        return None
 
 def grok_generate_content():
     """Generate Solium-focused tweet content using Grok API."""
     system_prompt = """
     You are a content generator for Solium Coin (SLM). Strict rules:
     - Language: English only
-    - Length: Strictly 400-450 characters (before hashtags), no more, no less
+    - Length: EXACTLY 400-450 characters (before hashtags), no exceptions
     - Focus: Solium’s story as 'The Spark of a Web3 Love,' emphasizing Web3, DeFi, staking, DAO, blockchain tech, community
     - Story: Solium (SLM) was born from a platonic love, igniting Web3 freedom. It connects BSC & Solana for fast, secure transactions. #SoliumArmy shapes the future via DAO, inspired by Dubai’s luxury. Call to action: “Join the spark!” or “Feel the vibe!”
     - Tone: Ultra coşkulu, epik, destansı, meme coin çılgınlığıyla ama profesyonel; asla yatırım tavsiyesi değil
     - Emojis: Use 3-5 emojis of your choice, selecting the most fitting ones for the emotion of each sentence (e.g., 😍 for love, 🔥 for excitement, 🚀 for innovation, 😎 for coolness). Place emojis INSIDE the text, at the end of emotional sentences or within phrases (e.g., “SLM sparks Web3! 🔥”, “Join our #SoliumArmy! 😍”). Do NOT pile all emojis at the end of the tweet. Distribute them naturally to amplify the vibe.
     - Must include 'Solium' or 'SLM'
     - Include a call-to-action in 60% of tweets (e.g., 'Join presale: soliumcoin.com' or 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
+    - Include a question in 20% of tweets to boost engagement (e.g., '#SoliumArmy, how will you spark Web3? 😍')
     - Do NOT include any hashtags in the content; hashtags will be added separately
     - Avoid: Any investment advice, price talk, or hype like 'moon,' 'pump,' 'buy now'
     - Example: "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com" (442 chars)
@@ -103,7 +118,7 @@ def grok_generate_content():
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": "Generate a 400-450 character tweet about Solium's story, Web3, and DeFi, with no hashtags, emojis inside emotional sentences"}
             ],
-            max_tokens=460,
+            max_tokens=450,
             temperature=0.9
         )
         content = completion.choices[0].message.content.strip()
@@ -155,7 +170,13 @@ def grok_generate_content():
 def post_tweet():
     """Post a single tweet with error handling."""
     try:
-        check_rate_limit()  # Rate limit durumunu kontrol et
+        rate_limit = check_rate_limit()
+        if rate_limit and rate_limit.get('remaining', 0) == 0:
+            reset_time = rate_limit.get('reset', time.time() + 86400)
+            wait_time = max(0, reset_time - time.time())
+            logging.info(f"Rate limit reached, waiting {wait_time/3600:.1f} hours")
+            time.sleep(wait_time)
+        
         logging.info("Attempting to post tweet...")
         # Generate content
         content = grok_generate_content()
@@ -168,6 +189,8 @@ def post_tweet():
             content = content[:350] + f" Join presale: soliumcoin.com! 😍🔥"
         elif random.random() < 0.3:  # %30 Telegram
             content = content[:340] + f" Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0! 😎"
+        elif random.random() < 0.2:  # %20 question
+            content = content[:340] + f" #SoliumArmy, how will you spark Web3? 😍"
         
         # Karakter kontrolü
         if len(content) > MAX_CONTENT_LENGTH:
@@ -188,29 +211,27 @@ def post_tweet():
     except tweepy.TweepyException as e:
         if "429" in str(e):
             logging.error(f"X API rate limit exceeded: {e}")
-            time.sleep(30 * 60)  # 30 dakika bekle
+            time.sleep(7200)  # 2 saat bekle
+            return False
         elif "400" in str(e):
             logging.error(f"X API rejected tweet, likely due to character limit: {e}")
+            return False
         elif "401" in str(e):
             logging.error(f"X API authentication error: {e}")
+            return False
         else:
             logging.error(f"Tweet posting failed: {e}")
-        return False
+            return False
     except Exception as e:
         logging.error(f"Tweet posting failed: {e}")
         return False
 
-def run_tweet_schedule():
-    """Run tweets every 3-5h randomly to avoid moderation."""
-    logging.info("Starting tweet schedule...")
-    while True:
-        if post_tweet():
-            sleep_time = random.randint(10800, 18000)  # 3-5 sa
-            logging.info(f"Next tweet in {sleep_time//3600}h {(sleep_time%3600)//60}m")
-            time.sleep(sleep_time)
-        else:
-            logging.info("Tweet failed, retrying in 5 minutes...")
-            time.sleep(300)
+def schedule_tweets():
+    """Schedule tweets every ~96 minutes (15 tweets in 24 hours)."""
+    scheduler = BackgroundScheduler(timezone="UTC")
+    # Tweet every 5760 seconds (~96 minutes) for 15 tweets in 24 hours
+    scheduler.add_job(post_tweet, 'interval', seconds=5760)
+    scheduler.start()
 
 def main():
     logging.info("Solium Bot starting...")
@@ -227,12 +248,15 @@ def main():
         logging.error(f"Initial tweet failed: {e}")
     
     # Start tweet schedule
-    run_tweet_schedule()
+    schedule_tweets()
+    try:
+        while True:
+            time.sleep(60)  # Keep the main thread alive
+    except KeyboardInterrupt:
+        logging.info("Bot stopped by user")
 
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt:
-        logging.info("Bot stopped by user")
     except Exception as e:
         logging.error(f"Fatal error: {e}")
