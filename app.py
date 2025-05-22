@@ -4,6 +4,7 @@ import time
 import random
 import logging
 import requests
+import httpx
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 import re
@@ -34,7 +35,7 @@ except Exception as e:
 
 # OpenAI (Grok) Client
 try:
-    client_grok = OpenAI(api_key=os.getenv("GROK_API_KEY"))
+    client_grok = OpenAI(api_key=os.getenv("GROK_API_KEY"), http_client=httpx.Client(proxies=None))
     logging.info("Grok client initialized successfully")
 except Exception as e:
     logging.error(f"Failed to initialize Grok client: {e}")
