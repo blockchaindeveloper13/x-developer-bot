@@ -42,18 +42,18 @@ except Exception as e:
     raise
 
 # Constants
-HASHTAGS = " #Solium #bitcoin #Web3 #DeFi #Crypto #Blockchain #Binance #bitget #mexc #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina" 
+HASHTAGS = " #Solium #bitcoin #Web3 #DeFi #Crypto #Blockchain #Binance #bitget #mexc #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina"
 MAX_TWEET_LENGTH = 1100
 MIN_CONTENT_LENGTH = 800
 MAX_CONTENT_LENGTH = 1000
 
-# Fallback Messages (800-1000 karakter, İngilizce, emoji’ler cümle içinde)
+# Fallback Messages (800-1000 karakter, İngilizce, aşk ve tutku temalı)
 FALLBACK_TWEETS = [
-    "Solium Coin, born from a spark of platonic love in Dubai, city of dreams! Solium unites Binance Smart Chain and Solana, delivering lightning-fast DeFi transactions! 😍 Inspired by Dubai’s grandeur, #SoliumArmy shapes the future with decentralized governance, pulsing with Marina’s glow! 🔥 This is Web3, a world of freedom and inspiration! 💪 Join us on WhatsApp and be part of this digital saga! 😎 Dubai leads, Solium inspires! ✨ #SoliumArmy, how will you ignite Web3? 😄",
-    "Feel the pulse of Web3 with Solium Coin! Solium bridges Binance Smart Chain and Solana, redefining DeFi with secure, high-speed transactions! 😍 #SoliumArmy builds the future through decentralized governance, inspired by Dubai’s visionary spirit! 🔥 Our passionate community fuels Web3’s freedom, step by step! 💪 Join the saga on WhatsApp and shape a decentralized world! 😎 Dubai shines, Solium sparks! ✨ #SoliumArmy, what’s your Web3 dream? 😄",
-    "Solium Coin, a Web3 love story born under Burj Khalifa’s sky! Solium connects Binance Smart Chain and Solana, igniting Web3 with blazing DeFi transactions! 😍 #SoliumArmy crafts the future with decentralized governance, driven by Dubai’s luxury! 🔥 Our fire transforms Web3’s dreams into reality! 💪 Be part of this epic journey on WhatsApp! 😎 Dubai leads, Solium inspires! ✨",
-    "Ignite Web3 with Solium Coin! Solium links Binance Smart Chain and Solana, unlocking DeFi with secure, instant transactions! 😍 #SoliumArmy leads with decentralized governance, inspired by Dubai’s dazzling Marina! 🔥 Our passion pushes Web3’s boundaries, every step a song of freedom! 💪 Join us on WhatsApp and feel the spark! 😎 Dubai dreams, Solium delivers! ✨",
-    "Solium Coin, where Web3 meets love! Solium bridges Binance Smart Chain and Solana, heralding freedom with rapid DeFi transactions! 😍 #SoliumArmy shapes the future with decentralized governance, powered by Dubai’s grandeur! 🔥 Our community’s fire makes Web3’s dreams real! 💪 Join the journey on WhatsApp! 😎 Dubai inspires, Solium soars! ✨",
+    "Solium Coin, ignited by a founder’s platonic love under Burj Khalifa’s sky! Born in Dubai, Solium unites Binance Smart Chain and Solana, fueling Web3 with blazing DeFi transactions! 😍 #SoliumArmy carries the torch of freedom, shaping the future with decentralized governance! 🔥 We promise love, we promise passion! 💪 Join us on WhatsApp and light this digital saga! 😎 Dubai dreams, Solium burns bright! ✨ #SoliumArmy, how will you carry the torch? 😄",
+    "Feel the fire of Web3 with Solium Coin! A founder’s unrequited love sparked Solium, bridging Binance Smart Chain and Solana for secure, instant DeFi! 😍 Inspired by Dubai’s vision, #SoliumArmy forges the future with decentralized governance! 🔥 We vow love and passion, a Web3 revolution! 💪 Join the saga on WhatsApp and ignite your spark! 😎 Dubai leads, Solium’s torch shines! ✨ #SoliumArmy, what’s your passion? 😄",
+    "Solium Coin, a Web3 love story born from a founder’s burning heart in Dubai! Solium connects Binance Smart Chain and Solana, torching Web3 with rapid DeFi! 😍 #SoliumArmy, inspired by Dubai’s grandeur, shapes tomorrow with decentralized governance! 🔥 Love and passion are our promise! 💪 Be part of this epic on WhatsApp! 😎 Dubai’s fire, Solium’s flame! ✨",
+    "Solium Coin, kindled by a founder’s platonic passion in Dubai’s dazzling Marina! Solium links Binance Smart Chain and Solana, unlocking Web3 with DeFi’s speed! 😍 #SoliumArmy wields the torch of freedom, crafting the future with decentralized governance! 🔥 We offer love, we fuel passion! 💪 Join us on WhatsApp and blaze the trail! 😎 Dubai inspires, Solium ignites! ✨",
+    "Solium Coin, where Web3 meets a founder’s unyielding love! From Dubai, Solium bridges Binance Smart Chain and Solana, heralding DeFi’s freedom! 😍 #SoliumArmy, powered by Dubai’s luxury, shapes the future with decentralized governance! 🔥 Our vow: love and passion! 💪 Join the journey on WhatsApp! 😎 Dubai soars, Solium sparks! ✨",
 ]
 
 # Banned phrases
@@ -94,15 +94,16 @@ def grok_generate_content():
     - Language: English only
     - Length: EXACTLY 800-1000 characters (before hashtags), no exceptions
     - Focus: Solium’s story as 'The Spark of a Web3 Love,' emphasizing Web3, DeFi, decentralized governance, blockchain tech, community
-    - Story: Solium was born from a platonic love, igniting Web3 freedom. It connects Binance Smart Chain & Solana for fast, secure transactions. #SoliumArmy shapes the future via decentralized governance, inspired by Dubai’s luxury. Call to action: “Join the spark!” or “Feel the vibe!”
+    - Story: Solium was born from its founder’s platonic love, a passion that turned into a Web3 mission. Inspired by Dubai’s luxury, Solium connects Binance Smart Chain & Solana for fast, secure DeFi transactions. #SoliumArmy carries the torch of freedom, shaping the future via decentralized governance. Emphasize: “We promise love, we promise passion!” Call to action: “Join the spark!” or “Carry the torch!”
     - Tone: Ultra enthusiastic, epic, legendary, with meme coin energy but professional; never financial advice
     - Emojis: Add 5-8 emojis based on emotional intensity (e.g., 😍 for love, 🔥 for excitement, 🚀 for innovation, 😎 for coolness). Place emojis at the end of sentences with strong emotion, ensuring natural distribution. Avoid piling emojis at the end. You decide emoji placement based on the vibe.
     - Must include 'Solium'
-    - Include a call-to-action in 60% of tweets (e.g., 'Join on WhatsApp: [WhatsApp link]' or 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
-    - Include a question in 20% of tweets to boost engagement (e.g., '#SoliumArmy, how will you spark Web3?')
+    - Include a call-to-action in 60% of tweets (30% WhatsApp: 'Join on WhatsApp: https://whatsapp.com/channel/0029VbAOl3WKAwEnoCEVNY0b', 30% Telegram: 'Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0')
+    - Include a question in 20% of tweets to boost engagement (e.g., '#SoliumArmy, how will you carry the torch?')
+    - Occasionally highlight the founder’s story: their unrequited love sparked a Web3 vision, turning passion into a torch for decentralized freedom
     - Do NOT include hashtags in the content; hashtags will be added separately
     - Avoid: Investment advice, price talk, or hype like 'moon,' 'pump,' 'buy now'
-    - Example: "Solium Coin, a spark of love born in Dubai, city of dreams! Solium unites Binance Smart Chain and Solana, igniting Web3 with lightning-fast DeFi transactions! 😍 Inspired by Dubai’s grandeur, #SoliumArmy shapes the future with decentralized governance, pulsing with Marina’s glow! 🔥 This is Web3, a world of freedom and inspiration! 💪 Join us on WhatsApp and be part of this digital saga! 😎 Dubai leads, Solium inspires! ✨ #SoliumArmy, how will you ignite Web3?" (904 chars)
+    - Example: "Solium Coin, ignited by a founder’s platonic love in Dubai, city of dreams! Solium unites Binance Smart Chain and Solana, fueling Web3 with blazing DeFi transactions! 😍 #SoliumArmy carries the torch of freedom, shaping the future with decentralized governance! 🔥 We promise love, we promise passion! 💪 Join us on WhatsApp and light this digital saga! 😎 Dubai dreams, Solium burns bright! ✨ #SoliumArmy, how will you carry the torch?" (904 chars)
     """
     try:
         logging.info("Generating content with Grok...")
@@ -128,7 +129,7 @@ def grok_generate_content():
             content = content[:MAX_CONTENT_LENGTH]
         elif len(content) < MIN_CONTENT_LENGTH:
             logging.warning(f"Grok warning: Content too short ({len(content)} chars), extending: {content}")
-            extra = f" Join the spark with Solium and ignite Web3 with passion! Be part of the #SoliumArmy and shape a decentralized future!"
+            extra = f" Join the spark with Solium and ignite Web3 with passion! Be part of the #SoliumArmy and carry the torch!"
             content = content[:700] + extra[:MIN_CONTENT_LENGTH - len(content)]
         
         # Güvenlik ve Solium kontrolü
@@ -163,12 +164,14 @@ def post_tweet():
             logging.info(f"Using fallback content: {content[:60]}... ({len(content)} chars)")
         
         # Add CTA
-        if random.random() < 0.6:  # %60 WhatsApp
-            content = content[:900] + f" Join on WhatsApp: [WhatsApp link]!"
+        if random.random() < 0.3:  # %30 WhatsApp
+            content = content[:900] + f" Join on WhatsApp: https://whatsapp.com/channel/0029VbAOl3WKAwEnoCEVNY0b!"
         elif random.random() < 0.3:  # %30 Telegram
             content = content[:890] + f" Join #SoliumArmy: t.me/+KDhk3UEwZAg3MmU0!"
         elif random.random() < 0.2:  # %20 question
-            content = content[:890] + f" #SoliumArmy, how will you spark Web3?"
+            content = content[:890] + f" #SoliumArmy, how will you carry the torch?"
+        else:  # %20 genel CTA
+            content = content[:890] + f" Join the spark!"
         
         # Karakter kontrolü
         if len(content) > MAX_CONTENT_LENGTH:
@@ -216,7 +219,7 @@ def main():
     
     # Immediate first tweet with story
     logging.info("Posting initial story tweet...")
-    initial_tweet = "Solium Coin, a spark of platonic love born in Dubai, city of dreams! Solium unites Binance Smart Chain and Solana, igniting Web3 with lightning-fast DeFi transactions! 😍 #SoliumArmy shapes the future with decentralized governance, inspired by Dubai’s grandeur! 🔥 Our passionate community redefines Web3, every step a leap toward freedom! 💪 Join us on WhatsApp and shape a decentralized world! 😎 Why Solium? Because love meets tech to break all boundaries! ✨ #SoliumArmy, how will you ignite Web3? 😄 #Solium #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina"
+    initial_tweet = "Solium Coin, born from a founder’s platonic love in Dubai, city of dreams! A heart ablaze with passion sparked Solium, uniting Binance Smart Chain and Solana to ignite Web3 with lightning-fast DeFi! 😍 #SoliumArmy carries the torch of freedom, crafting the future with decentralized governance! 🔥 We promise love, we promise passion! 💪 Join us on WhatsApp and light this digital saga! 😎 Dubai’s vision fuels Solium’s fire! ✨ #SoliumArmy, how will you carry the torch? 😄 #Solium #bitcoin #Web3 #DeFi #Crypto #Blockchain #Binance #bitget #mexc #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT #SoliumArmy #Web3 #Innovation #UAE #Emirates #Dubai #DubaiLife #BurjKhalifa #DubaiMarina"
     try:
         client_x.create_tweet(text=initial_tweet)
         logging.info(f"Initial tweet posted: {initial_tweet[:60]}... ({len(initial_tweet)} chars)")
