@@ -5,6 +5,7 @@ import random
 import logging
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
+import re
 
 # Logging setup
 logging.basicConfig(
@@ -42,17 +43,21 @@ except Exception as e:
 
 # Constants
 HASHTAGS = " #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT"  # 104 karakter
-MAX_TWEET_LENGTH = 600  # Premium için 400-450 + hashtag’ler
-MIN_CONTENT_LENGTH = 400  # İçerik için minimum
-MAX_CONTENT_LENGTH = 450  # İçerik için maksimum
+MAX_TWEET_LENGTH = 600
+MIN_CONTENT_LENGTH = 400
+MAX_CONTENT_LENGTH = 450
+# For 800-1000 char test:
+# MIN_CONTENT_LENGTH = 800
+# MAX_CONTENT_LENGTH = 1000
+# MAX_TWEET_LENGTH = 1100
 
-# Fallback Messages (Sadece İngilizce, 400-450 karakter, emojiler cümle içinde, Grok tarzı)
+# Fallback Messages (400-450 karakter, emojiler cümle içinde)
 FALLBACK_TWEETS = [
-    "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com",  # 442 karakter
-    "Feel the Web3 vibe with Solium Coin! 🚀 SLM’s cross-chain tech links BSC & Solana for secure swaps! 😄 Our #SoliumArmy stakes SLM and rules the DAO, building a world of love! 💖 Join the revolution, spark the future! ✨ t.me/+KDhk3UEwZAg3MmU0",  # 445 karakter
-    "Solium: A Web3 love saga! 🌍 SLM fuels BSC-Solana swaps with blazing speed! ⚡ Join our #SoliumArmy to stake SLM and shape DeFi’s future via DAO. 😍 Ignite freedom with community passion! 🔥 Join presale: soliumcoin.com",  # 440 karakter
-    "Ignite your Web3 soul with Solium Coin! 💪 SLM’s BSC-Solana DeFi swaps are unstoppable! 😎 Our #SoliumArmy votes in the DAO to build a free dream. 🌟 Feel the love, spark the revolution! 🎉 Join: t.me/+KDhk3UEwZAg3MmU0",  # 444 karakter
-    "Solium Coin: Where love meets Web3! 😘 SLM’s cross-chain tech sparks DeFi with BSC-Solana swaps! 🔥 Join our #SoliumArmy, stake SLM, and shape a future of freedom! 💥 Feel the vibe, ignite the spark! 😎 Join presale: soliumcoin.com",  # 443 karakter
+    "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com",
+    "Feel the Web3 vibe with Solium Coin! 🚀 SLM’s cross-chain tech links BSC & Solana for secure swaps! 😄 Our #SoliumArmy stakes SLM and rules the DAO, building a world of love! 💖 Join the revolution, spark the future! ✨ t.me/+KDhk3UEwZAg3MmU0",
+    "Solium: A Web3 love saga! 🌍 SLM fuels BSC-Solana swaps with blazing speed! ⚡ Join our #SoliumArmy to stake SLM and shape DeFi’s future via DAO. 😍 Ignite freedom with community passion! 🔥 Join presale: soliumcoin.com",
+    "Ignite your Web3 soul with Solium Coin! 💪 SLM’s BSC-Solana DeFi swaps are unstoppable! 😎 Our #SoliumArmy votes in the DAO to build a free dream. 🌟 Feel the love, spark the revolution! 🎉 Join: t.me/+KDhk3UEwZAg3MmU0",
+    "Solium Coin: Where love meets Web3! 😘 SLM’s cross-chain tech sparks DeFi with BSC-Solana swaps! 🔥 Join our #SoliumArmy, stake SLM, and shape a future of freedom! 💥 Feel the vibe, ignite the spark! 😎 Join presale: soliumcoin.com",
 ]
 
 # Banned phrases
@@ -62,6 +67,17 @@ def is_safe_tweet(content):
     """Check if content avoids banned phrases."""
     content_lower = content.lower()
     return not any(phrase in content_lower for phrase in BANNED_PHRASES)
+
+def check_rate_limit():
+    """Check X API rate limit status."""
+    try:
+        # Note: tweepy.Client doesn't have a direct get_rate_limit_status method
+        # To implement, use raw API call to /2/users/me/rate_limits (requires OAuth 2.0)
+        logging.info("Checking rate limit status (placeholder, implement with raw API if needed)")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to check rate limit status: {e}")
+        return False
 
 def grok_generate_content():
     """Generate Solium-focused tweet content using Grok API."""
@@ -116,7 +132,6 @@ def grok_generate_content():
         
         # Emoji dağılım kontrolü
         emoji_pattern = r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002700-\U000027BF\U00002600-\U000026FF]'
-        import re
         emojis = re.findall(emoji_pattern, content)
         emoji_count = len(emojis)
         last_50_chars = content[-50:]
@@ -124,7 +139,6 @@ def grok_generate_content():
         last_50_emoji_count = len(last_50_emojis)
         if emoji_count < 3 or last_50_emoji_count >= emoji_count:
             logging.warning(f"Grok warning: Emojis not distributed well ({emoji_count} emojis, {last_50_emoji_count} in last 50 chars): {content}")
-            # Emojileri cümle içlerine dağıt
             sentences = content.split('. ')
             if len(sentences) > 2:
                 content = '. '.join(
@@ -141,6 +155,7 @@ def grok_generate_content():
 def post_tweet():
     """Post a single tweet with error handling."""
     try:
+        check_rate_limit()  # Rate limit durumunu kontrol et
         logging.info("Attempting to post tweet...")
         # Generate content
         content = grok_generate_content()
@@ -171,7 +186,10 @@ def post_tweet():
         return True
         
     except tweepy.TweepyException as e:
-        if "400" in str(e):
+        if "429" in str(e):
+            logging.error(f"X API rate limit exceeded: {e}")
+            time.sleep(30 * 60)  # 30 dakika bekle
+        elif "400" in str(e):
             logging.error(f"X API rejected tweet, likely due to character limit: {e}")
         elif "401" in str(e):
             logging.error(f"X API authentication error: {e}")
@@ -183,11 +201,11 @@ def post_tweet():
         return False
 
 def run_tweet_schedule():
-    """Run tweets every 45min-2.5h randomly to avoid moderation."""
+    """Run tweets every 3-5h randomly to avoid moderation."""
     logging.info("Starting tweet schedule...")
     while True:
         if post_tweet():
-            sleep_time = random.randint(2700, 9000)  # 45dk-2.5sa
+            sleep_time = random.randint(10800, 18000)  # 3-5 sa
             logging.info(f"Next tweet in {sleep_time//3600}h {(sleep_time%3600)//60}m")
             time.sleep(sleep_time)
         else:
@@ -199,7 +217,7 @@ def main():
     
     # Immediate first tweet with story
     logging.info("Posting initial story tweet...")
-    initial_tweet = "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT"  # 442 chars + hashtags
+    initial_tweet = "Solium Coin sparks a Web3 love story! 😍 SLM powers BSC-Solana DeFi swaps with epic speed! 🔥 Join our #SoliumArmy, stake SLM, and vote in our DAO to shape a free future. 💪 Feel the passion, ignite the revolution! 😎 Join presale: soliumcoin.com #Solium #SoliumArmy #Web3 #DeFi #Crypto #Blockchain #Binance #BSC #BNB #Solana #Cardano #Polkadot #Altcoin #Ethereum #NFT"
     try:
         client_x.create_tweet(text=initial_tweet)
         logging.info(f"Initial tweet posted: {initial_tweet[:60]}... ({len(initial_tweet)} chars)")
