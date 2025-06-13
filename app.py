@@ -33,11 +33,17 @@ try:
         access_token=os.getenv("X_ACCESS_TOKEN"),
         access_token_secret=os.getenv("X_ACCESS_SECRET")
     )
-    api_x = tweepy.API(tweepy.OAuthHandler(os.getenv("X_API_KEY"), os.getenv("X_SECRET_KEY")))
-    api_x.set_access_token(os.getenv("X_ACCESS_TOKEN"), os.getenv("X_ACCESS_SECRET"))
-    logging.info("X API istemcisi başarıyla başlatıldı")
+    # Twitter API v1.1 istemcisi (OAuth 1.0a)
+    auth = tweepy.OAuth1UserHandler(
+        consumer_key=os.getenv("X_API_KEY"),
+        consumer_secret=os.getenv("X_SECRET_KEY"),
+        access_token=os.getenv("X_ACCESS_TOKEN"),
+        access_token_secret=os.getenv("X_ACCESS_SECRET")
+    )
+    api_x = tweepy.API(auth, wait_on_rate_limit=True)
+    logging.info("X API istemcileri başarıyla başlatıldı")
 except Exception as e:
-    logging.error(f"X API istemcisi başlatılamadı: {e}")
+    logging.error(f"X API istemcileri başlatılamadı: {e}")
     raise
 
 # Grok istemcisi
