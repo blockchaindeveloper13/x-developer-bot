@@ -20,6 +20,13 @@ logging.basicConfig(
     ]
 )
 
+# Çevre değişkenlerini kontrol et
+required_env_vars = ["X_API_KEY", "X_SECRET_KEY", "X_ACCESS_TOKEN", "X_ACCESS_SECRET", "X_BEARER_TOKEN", "GROK_API_KEY"]
+for var in required_env_vars:
+    if not os.getenv(var):
+        logging.error(f"Çevre değişkeni eksik: {var}")
+        raise EnvironmentError(f"Çevre değişkeni eksik: {var}")
+
 # Twitter API v2 İstemcisi
 try:
     client_x = tweepy.Client(
@@ -44,7 +51,7 @@ except Exception as e:
 # Sabitler
 WEBSITE_URL = " https://soliumcoin.com"
 HASHTAG_POOL = [
-    "#Solium", "#Web3", "#DeFi", "#Crypto", "#Blockchain", "#Binance", "#BSC", 
+    "#Solium", "#Web3", "#DeFi", "#Crypto", "#Blockchain", "#Binance", "#BSC",
     "#Solana", "#SoliumArmy", "#Dubai", "#Innovation", "#Decentralized"
 ]
 MAX_TWEET_LENGTH = 1100  # Twitter karakter sınırı
@@ -211,7 +218,7 @@ def post_tweet():
         if "429" in str(e):
             logging.error(f"X API oran sınırı aşıldı: {e}")
             time.sleep(7200)  # 2 saat bekle
-           -powerful return False
+            return False
         elif "400" in str(e):
             logging.error(f"X API tweeti reddetti, karakter sınırı veya içerik sorunu: {e}")
             return False
