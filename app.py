@@ -3,7 +3,6 @@ import os
 import time
 import random
 import logging
-import requests
 import httpx
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
@@ -21,7 +20,7 @@ logging.basicConfig(
 )
 
 # Çevre değişkenlerini kontrol et
-required_env_vars = ["X_API_KEY", "X_SECRET_KEY", "X_ACCESS_TOKEN", "X_ACCESS_SECRET", "X_BEARER_TOKEN", "GROK_API_KEY"]
+required_env_vars = ["X_API_KEY", "X_SECRET_KEY", "X_ACCESS_TOKEN", "X_ACCESS_SECRET", "GROK_API_KEY"]
 for var in required_env_vars:
     if not os.getenv(var):
         logging.error(f"Çevre değişkeni eksik: {var}")
@@ -80,29 +79,6 @@ def is_safe_tweet(content):
     """İçeriğin yasak ifadeler içerip içermediğini kontrol et."""
     content_lower = content.lower()
     return not any(phrase in content_lower for phrase in BANNED_PHRASES)
-
-def check_rate_limit():
-    """X API oran sınırını kontrol et."""
-    try:
-        bearer_token = os.getenv('X_BEARER_TOKEN')
-        if not bearer_token:
-            logging.error("X_BEARER_TOKEN çevre değişkenlerinde ayarlanmadı")
-            return None
-        headers = {"Authorization": f"Bearer {bearer_token}"}
-        response = requests.get("https://api.twitter.com/2/rate_limits", headers=headers)
-        if response.status_code == 200:
-            limits = response.json()
-            tweet_limit = limits.get('resources', {}).get('tweets', {}).get('/2/tweets', {})
-            reset_time = datetime.fromtimestamp(tweet_limit.get('reset', time.time()), timezone.utc)
-            reset_time_tr = reset_time.astimezone(timezone(timedelta(hours=3)))  # Türkiye saati
-            logging.info(f"POST /2/tweets oran sınırı: {tweet_limit}, sıfırlanma: {reset_time} UTC ({reset_time_tr} Türkiye saati)")
-            return tweet_limit
-        else:
-            logging.error(f"Oran sınırı kontrolü başarısız: {response.status_code} {response.text}")
-            return None
-    except Exception as e:
-        logging.error(f"Oran sınırı kontrolü başarısız: {e}")
-        return None
 
 def select_random_hashtags():
     """Rastgele 5-7 hashtag seç."""
@@ -170,13 +146,6 @@ def grok_generate_content():
 def post_tweet():
     """Tek bir tweet gönder, hata yönetimi ile."""
     try:
-        rate_limit = check_rate_limit()
-        if rate_limit and rate_limit.get('remaining', 0) == 0:
-            reset_time = rate_limit.get('reset', time.time() + 86400)
-            wait_time = max(0, reset_time - time.time())
-            logging.info(f"Oran sınırı aşıldı, {wait_time/3600:.1f} saat bekleniyor")
-            time.sleep(wait_time)
-        
         logging.info("Tweet gönderiliyor...")
         # İçerik üret
         content = grok_generate_content()
