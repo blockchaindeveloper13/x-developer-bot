@@ -9,26 +9,23 @@ from openai import OpenAI
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# Günlük kaydı ayarları (Türkiye saati ile)
+# Günlük kaydı (Türkiye saati)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('solium_bot.log'),
-        logging.StreamHandler()
-    ],
+    handlers=[logging.FileHandler('solium_bot.log'), logging.StreamHandler()],
     datefmt='%Y-%m-%d %H:%M:%S %Z'
 )
 logging.Formatter.converter = lambda *args: datetime.now(timezone(timedelta(hours=3))).timetuple()
 
-# Çevre değişkenlerini kontrol et
+# Çevre değişkenleri kontrol
 required_env_vars = ["X_API_KEY", "X_SECRET_KEY", "X_ACCESS_TOKEN", "X_ACCESS_SECRET", "GROK_API_KEY"]
 for var in required_env_vars:
     if not os.getenv(var):
         logging.error(f"Çevre değişkeni eksik: {var}")
         raise EnvironmentError(f"Çevre değişkeni eksik: {var}")
 
-# Twitter API v2 İstemcisi
+# Twitter API v2 istemcisi
 try:
     client_x = tweepy.Client(
         consumer_key=os.getenv("X_API_KEY"),
@@ -36,12 +33,14 @@ try:
         access_token=os.getenv("X_ACCESS_TOKEN"),
         access_token_secret=os.getenv("X_ACCESS_SECRET")
     )
+    api_x = tweepy.API(tweepy.OAuthHandler(os.getenv("X_API_KEY"), os.getenv("X_SECRET_KEY")))
+    api_x.set_access_token(os.getenv("X_ACCESS_TOKEN"), os.getenv("X_ACCESS_SECRET"))
     logging.info("X API istemcisi başarıyla başlatıldı")
 except Exception as e:
     logging.error(f"X API istemcisi başlatılamadı: {e}")
     raise
 
-# OpenAI (Grok) İstemcisi
+# Grok istemcisi
 try:
     client_grok = OpenAI(api_key=os.getenv("GROK_API_KEY"), base_url="https://api.x.ai/v1", http_client=httpx.Client(proxies=None))
     logging.info("Grok istemcisi başarıyla başlatıldı")
@@ -68,18 +67,23 @@ HASHTAG_POOL = [
     "#FinancialFreedom", "#PassiveIncome", "#CryptoInvesting", "#BullRun",
     "#BearMarket", "#Dubai", "#Innovation"
 ]
-MAX_TWEET_LENGTH = 4000  # X Premium için maksimum karakter sınırı
-PREVIEW_LENGTH = 280  # İlk görünen kısım
+MAX_TWEET_LENGTH = 4000
+PREVIEW_LENGTH = 280
 SALE_MESSAGE = f" Join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Explore: {WEBSITE_URL}"
 
-# Yedek Tweet’ler (280+ karakter, İngilizce, satış odaklı)
+# Yedek Tweet’ler
 FALLBACK_TWEETS = [
-    f"{WEBSITE_URL} Solium Coin presale extended! 🚨 Join with BNB now via MetaMask, Binance, or KuCoin Web3 Wallet! Aligned with top exchanges, launching by Sep, maybe Jul! #SoliumArmy sparks Web3! 😍 Why Choose Solium? Our BSC-Solana bridge delivers unmatched DeFi speed! 🚀 #SoliumArmy shapes the future via DAO! 🔥 BNB joining is seamless with Web3 Wallets! 😎 Exchange protocols signed, Sep or Jul launch! Join with BNB now! Explore: {WEBSITE_URL} 💪 #Solium #Web3 #DeFi",
-    f"{WEBSITE_URL} Don’t miss Solium Coin’s presale! 🚨 BNB via Binance, KuCoin Web3 Wallet, or MetaMask! Set for exchanges, launching Sep or Jul! #SoliumArmy ignites DeFi! 😍 Why Choose Solium? BSC-Solana bridge for secure DeFi! 🚀 DAO empowers #SoliumArmy! 🔥 Easy BNB process! 😎 Exchange deals in place! Join with BNB now! Explore: {WEBSITE_URL} 💪 #Solium #Web3 #Crypto",
-    f"{WEBSITE_URL} Solium Coin presale is live! 🚨 Join with BNB using MetaMask or Web3 Wallets! Exchange-ready, launching by Sep, maybe Jul! #SoliumArmy builds freedom! 😍 Why Choose Solium? Fastest DeFi with BSC-Solana! 🚀 Community-driven DAO! 🔥 Simple BNB joining! 😎 Exchange protocols ready! Join with BNB now! Explore: {WEBSITE_URL} 💪 #Solium #DeFi #Binance",
+    f"{WEBSITE_URL} Born in Dubai, Solium Coin’s presale is live! 🚨 Join with BNB via MetaMask or Web3 Wallets! Aligned with top exchanges, launching by Sep, maybe Jul! #SoliumArmy sparks Web3! 😍 Why Choose Solium? BSC-Solana bridge for unmatched DeFi speed! 🚀 DAO empowers #SoliumArmy! 🔥 Easy BNB process! 😎 Exchange protocols signed! {SALE_MESSAGE} 💪 #Solium #Web3",
+    f"{WEBSITE_URL} Ready for Web3’s future? Solium Coin’s presale awaits! 😍 BNB via Binance, KuCoin Web3 Wallet, or MetaMask! Set for exchanges, launching Sep or Jul! #SoliumArmy ignites DeFi! 🚀 Why Choose Solium? Secure BSC-Solana bridge! 🔥 DAO voting power! 😎 Simple BNB joining! 💪 Exchange deals ready! {SALE_MESSAGE} #Solium #Crypto",
+    f"{WEBSITE_URL} Solium Coin’s presale is hot! 🚀 Join with BNB now via MetaMask or Web3 Wallets! Exchange-ready, launching by Sep, maybe Jul! #SoliumArmy builds freedom! 😍 Why Choose Solium? Fastest DeFi with BSC-Solana! 🚀 Community-driven DAO! 🔥 Easy BNB process! 😎 Exchange protocols signed! {SALE_MESSAGE} 💪 #Solium #DeFi",
+    f"{WEBSITE_URL} From Dubai’s heart, Solium Coin fuels Web3! 🔥 BNB presale live via Binance or MetaMask! Aligned with exchanges, launching Sep or Jul! #SoliumArmy shines! 😍 Why Choose Solium? BSC-Solana bridge speed! 🚀 DAO empowers you! 😎 Seamless BNB joining! 💪 Exchange deals in place! {SALE_MESSAGE} #Solium #Web3",
+    f"{WEBSITE_URL} Solium Coin: Web3’s Dubai dream! 😍 Join presale with BNB via KuCoin Web3 Wallet or MetaMask! Set for exchanges, launching Sep or Jul! #SoliumArmy rises! 🚀 Why Choose Solium? Ultra-fast BSC-Solana bridge! 🔥 DAO governance! 😎 Easy BNB process! 💪 Exchange protocols ready! {SALE_MESSAGE} #Solium #Crypto",
+    f"{WEBSITE_URL} Don’t miss Solium Coin’s presale spark! 🚨 BNB via Binance Web3 Wallet or MetaMask! Launching Sep, maybe Jul, with exchange deals! #SoliumArmy roars! 😍 Why Choose Solium? BSC-Solana bridge for DeFi! 🚀 #SoliumArmy’s DAO! 🔥 Simple BNB joining! 😎 Exchange protocols signed! {SALE_MESSAGE} 💪 #Solium #DeFi",
+    f"{WEBSITE_URL} Solium Coin, born from Dubai’s passion! 🔥 Presale live with BNB via MetaMask or Web3 Wallets! Exchange-ready, launching Sep or Jul! #SoliumArmy unites! 😍 Why Choose Solium? BSC-Solana speed! 🚀 DAO voting! 😎 Easy BNB process! 💪 Exchange deals set! {SALE_MESSAGE} #Solium #Web3",
+    f"{WEBSITE_URL} Join Solium Coin’s Web3 revolution! 🚀 BNB presale via Binance or KuCoin Web3 Wallet! Aligned with exchanges, launching Sep or Jul! #SoliumArmy leads! 😍 Why Choose Solium? Secure BSC-Solana bridge! 🔥 DAO power! 😎 Seamless BNB joining! 💪 Exchange protocols ready! {SALE_MESSAGE} #Solium #Crypto"
 ]
 
-# Yasaklı ifadeler (Howey Testi ve kırmızı bayrak radarından kaçınmak için)
+# Yasaklı ifadeler
 BANNED_PHRASES = [
     "get rich", "guaranteed", "to the moon", "skyrocket", "buy now", "make money",
     "financial advice", "profit", "guaranteed returns", "investment opportunity",
@@ -88,12 +92,10 @@ BANNED_PHRASES = [
 ]
 
 def is_safe_tweet(content):
-    """İçeriğin yasak ifadeler içerip içermediğini kontrol et."""
     content_lower = content.lower()
     return not any(phrase in content_lower for phrase in BANNED_PHRASES)
 
 def check_rate_limit():
-    """Twitter API oran sınırını kontrol et."""
     try:
         response = client_x.get_me()
         rate_limit = response.meta.get('x-rate-limit-remaining', None)
@@ -106,30 +108,45 @@ def check_rate_limit():
         return None, None
 
 def select_random_hashtags():
-    """Rastgele 9-10 hashtag seç."""
     return " " + " ".join(random.sample(HASHTAG_POOL, random.randint(9, 10)))
 
+# TT çekme (TT botuyla sinerji)
+def get_trending_topics(woeid):
+    try:
+        trends = api_x.get_place_trends(woeid)
+        return [trend["name"] for trend in trends[0]["trends"][:5]]
+    except Exception as e:
+        logging.error(f"TT çekme hatası (WOEID: {woeid}): {e}")
+        return ["#Crypto", "#Web3", "#DeFi"]
+
 def grok_generate_content():
-    """Solium odaklı tweet içeriği üret."""
     system_prompt = f"""
     You are a content generator for Solium Coin, a Web3 project born from passion. Strict rules:
     - Language: English only
-    - Length: Up to 4000 characters, optimized for X Premium. First 280 characters must be highly engaging to drive 'See More' clicks, followed by detailed content.
-    - Structure: Start with “{WEBSITE_URL} Solium Coin presale extended! 🚨 Don’t miss out, join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Aligned with top exchanges, launching by September, possibly July if sales soar! Any moment, we could hit major exchanges!” Then, under “Why Choose Solium?”, answer these questions in depth:
-      - What is Solium’s technical edge over other DeFi projects? (Highlight BSC-Solana bridge, speed, low fees)
-      - How does the community engage, and how does governance work? (Emphasize #SoliumArmy’s DAO, voting power)
-      - How does joining with BNB work, is it user-friendly? (Detail MetaMask, Binance/KuCoin Web3 Wallet ease)
-      - When will Solium hit exchanges, what’s the progress? (Mention protocols signed, Sep/Jul timeline)
-    - Focus: Solium’s 'Spark of a Web3 Love' story, born from a founder’s platonic love in Dubai, turning passion into a Web3 mission. Inspired by Dubai’s luxury, Solium bridges Binance Smart Chain & Solana for ultra-fast, secure DeFi. #SoliumArmy drives decentralized freedom.
-    - Tone: Professional, enthusiastic, highly persuasive, inviting, community-focused; never financial advice
-    - Emojis: 5-10 emojis per tweet (😍 for love, 🔥 for excitement, 🚀 for innovation, 😎 for coolness). Place naturally at sentence ends.
-    - Exchanges: Every tweet must include “Protocols signed with top exchanges, launch set for September, possibly July if sales surge!” without profit guarantees.
-    - CTA: Reinforce “Join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Explore: {WEBSITE_URL}” at start and end.
-    - Engagement: 30% of tweets end with a question like “#SoliumArmy, ready to ignite Web3?” or “How will you shape Web3 with Solium?”
-    - Details: Highlight presale extension, urgency (“any moment, we could hit exchanges”), and user-friendly BNB process. Emphasize Solium’s unique BSC-Solana bridge and DAO governance.
+    - Length: Up to 4000 chars, optimized for X Premium. First 280 chars must be unique, engaging, and optimized to drive 'See More' clicks, generated creatively by you. Followed by detailed content.
+    - First 280 chars: Always start with “{WEBSITE_URL}”. Create a varied, catchy intro (50-100 chars) that MUST include:
+      - Presale emphasis (e.g., “presale live!” or “presale extended!”)
+      - BNB joining via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask
+      - Exchange alignment, launching Sep, possibly Jul (e.g., “any moment, we could hit exchanges!”)
+      Vary tone (urgent, story-driven, community-focused) but keep these elements. Examples:
+      - “{WEBSITE_URL} Solium Coin presale live! 🚨 Join with BNB via MetaMask! Launching Sep, maybe Jul, exchanges soon!”
+      - “{WEBSITE_URL} Presale extended! 😍 BNB via Binance Web3 Wallet, hit exchanges any moment, Sep/Jul launch!”
+      - “{WEBSITE_URL} Dubai’s Solium presale is hot! 🚀 Join BNB via KuCoin Wallet, exchanges aligned for Sep/Jul!”
+    - Structure: After the intro, under “Why Choose Solium?”, answer:
+      - What is Solium’s technical edge? (BSC-Solana bridge, speed, low fees)
+      - How does community engage, governance work? (#SoliumArmy’s DAO, voting)
+      - How does BNB joining work, is it user-friendly? (MetaMask, Web3 Wallet ease)
+      - When will Solium hit exchanges, progress? (Protocols signed, Sep/Jul)
+    - Focus: Solium’s 'Spark of a Web3 Love' story, born from a founder’s platonic love in Dubai, turning passion into a Web3 mission. Inspired by Dubai’s luxury, Solium bridges Binance Smart Chain & Solana for ultra-fast, secure DeFi. #SoliumArmy drives freedom.
+    - Tone: Professional, enthusiastic, persuasive, community-focused; no financial advice
+    - Emojis: 5-10 per tweet (😍, 🔥, 🚀, 😎, 💪), placed naturally
+    - Exchanges: Include “Protocols signed with top exchanges, launch set for Sep, possibly Jul if sales surge!” without profit guarantees
+    - CTA: End with “{SALE_MESSAGE}”
+    - Engagement: 50% of tweets end with a question like “#SoliumArmy, ready to ignite Web3?” or “How will you shape Web3 with Solium?”
+    - Details: Highlight presale extension, urgency, BSC-Solana bridge, DAO governance
     - Do NOT include hashtags or website URL in content; added separately
-    - Avoid: Investment advice, price talk, 'moon,' 'skyrocket,' or any profit guarantees
-    - Example: “{WEBSITE_URL} Solium Coin presale extended! 🚨 Don’t miss out, join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Aligned with top exchanges, launching by September, possibly July if sales soar! Any moment, we could hit major exchanges! Why Choose Solium? Solium’s BSC-Solana bridge offers unmatched DeFi speed and low fees, outpacing rivals! 😍 #SoliumArmy shapes every decision via our DAO, giving you voting power! 🔥 Joining with BNB is seamless—connect MetaMask or Web3 Wallet in seconds! 🚀 Protocols signed with top exchanges, launch set for Sep, maybe Jul! 😎 Join with BNB now! Explore: {WEBSITE_URL} #SoliumArmy, ready to ignite Web3? 💪”
+    - Avoid: Investment advice, price talk, 'moon,' 'skyrocket,' profit guarantees
+    - Example: “{WEBSITE_URL} Solium Coin presale live! 🚨 Join with BNB via MetaMask! Launching Sep, maybe Jul, exchanges soon! Why Choose Solium? BSC-Solana bridge for unmatched speed! 😍 #SoliumArmy’s DAO empowers you! 🔥 BNB joining is seamless! 🚀 Protocols signed, Sep/Jul launch! 😎 {SALE_MESSAGE} #SoliumArmy, ready to ignite Web3? 💪”
     """
     try:
         logging.info("Grok ile içerik üretiliyor...")
@@ -137,34 +154,27 @@ def grok_generate_content():
             model="grok-3",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Generate a tweet about Solium’s story, Web3, and DeFi, up to 4000 characters, starting with the presale message, answering the four questions under 'Why Choose Solium?', with emojis placed based on emotional intensity"}
+                {"role": "user", "content": "Generate a tweet about Solium’s story, Web3, and DeFi, up to 4000 chars, with a unique, optimized first 280 chars, answering the four questions under 'Why Choose Solium?', with emojis based on emotional intensity"}
             ],
             max_tokens=4000,
             temperature=0.9
         )
         content = completion.choices[0].message.content.strip()
         
-        # İçerik kontrolü
-        if not content:
-            logging.error("Grok hatası: İçerik boş")
-            raise ValueError("İçerik boş")
-        
-        # Güvenlik ve Solium kontrolü
-        if not is_safe_tweet(content):
-            logging.error(f"Grok hatası: İçerik yasak ifadeler içeriyor: {content[:100]}...")
-            raise ValueError("İçerik yasak ifadeler içeriyor")
-        if "Solium" not in content:
-            logging.error(f"Grok hatası: İçerikte 'Solium' eksik: {content[:100]}...")
-            raise ValueError("İçerikte 'Solium' eksik")
-        
-        # İlk 280 karakteri optimize et
+        # İlk 280 karakterde zorunlu unsurları kontrol et
         preview = content[:PREVIEW_LENGTH]
+        if not content or not is_safe_tweet(content) or "Solium" not in content:
+            logging.error(f"Grok hatası: İçerik boş veya geçersiz: {content[:100]}...")
+            raise ValueError("Geçersiz içerik")
+        if not preview.startswith(WEBSITE_URL) or "presale" not in preview.lower() or "BNB" not in preview or "exchange" not in preview.lower():
+            logging.error(f"Grok hatası: İlk 280 char eksik: {preview[:100]}...")
+            raise ValueError("İlk 280 char zorunlu unsurları içermiyor")
+        
         if len(preview) < 100:
             preview += f" Why Choose Solium? Join the Web3 revolution! 😍"
         
-        # Tam içeriği logla
-        logging.info(f"Grok tam içeriği: {content[:100]}... ({len(content)} karakter)")
-        logging.info(f"İlk 280 karakter: {preview} ({len(preview)} karakter)")
+        logging.info(f"Grok tam içeriği: {content[:100]}... ({len(content)} chars)")
+        logging.info(f"İlk 280 char: {preview} ({len(preview)} chars)")
         
         return content
     except Exception as e:
@@ -172,7 +182,6 @@ def grok_generate_content():
         return None
 
 def post_tweet():
-    """Tek bir tweet gönder, hata yönetimi ile."""
     try:
         rate_limit, reset_time = check_rate_limit()
         if rate_limit == 0:
@@ -184,70 +193,66 @@ def post_tweet():
         content = grok_generate_content()
         if not content:
             content = random.choice([t for t in FALLBACK_TWEETS if is_safe_tweet(t)])
-            logging.info(f"Yedek içerik kullanılıyor: {content[:60]}... ({len(content)} karakter)")
+            logging.info(f"Yedek içerik: {content[:60]}... ({len(content)} chars)")
         
-        content = f"{WEBSITE_URL} Solium Coin presale extended! 🚨 Don’t miss out, join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Aligned with top exchanges, launching by September, possibly July if sales soar! Any moment, we could hit major exchanges! {content} {SALE_MESSAGE}"
-        
-        if random.random() < 0.3:
+        if random.random() < 0.5:
             content += f" #SoliumArmy, ready to ignite Web3? 😎"
         
-        hashtags = select_random_hashtags()
+        regions = [
+            {"name": "Dubai", "woeid": 1940345}, {"name": "Suudi Arabistan", "woeid": 23424938},
+            {"name": "Türkiye", "woeid": 23424969}, {"name": "Singapur", "woeid": 23424948},
+            {"name": "Vietnam", "woeid": 23424984}, {"name": "Brezilya", "woeid": 23424768}
+        ]
+        region = random.choice(regions)
+        tt_hashtags = " ".join(get_trending_topics(region["woeid"])[:2])
+        hashtags = select_random_hashtags() + f" {tt_hashtags}"
         
-        tweet_text = f"{content}{hashtags}"
+        tweet_text = f"{content} {SALE_MESSAGE}{hashtags}"
         if len(tweet_text) > MAX_TWEET_LENGTH:
-            logging.warning(f"Tweet çok uzun ({len(tweet_text)} karakter), kesiliyor")
+            logging.warning(f"Tweet çok uzun ({len(tweet_text)} chars), kesiliyor")
             tweet_text = tweet_text[:MAX_TWEET_LENGTH]
         
-        logging.info(f"Nihai tweet metni: {tweet_text[:60]}... ({len(tweet_text)} karakter)")
+        logging.info(f"Nihai tweet: {tweet_text[:60]}... ({len(tweet_text)} chars)")
         
         response = client_x.create_tweet(text=tweet_text)
-        logging.info(f"Tweet başarıyla gönderildi: {tweet_text[:60]}... ({len(tweet_text)} karakter), Tweet ID: {response.data['id']}")
-        
+        logging.info(f"Tweet gönderildi: {tweet_text[:60]}... ({len(tweet_text)} chars), ID: {response.data['id']}")
         return True
-        
     except tweepy.TweepyException as e:
         error_details = getattr(e, 'api_errors', str(e))
         if "429" in str(e):
-            logging.error(f"X API oran sınırı aşıldı: {e}, Hata Detayı: {error_details}")
+            logging.error(f"X API oran sınırı aşıldı: {e}, Detay: {error_details}")
             time.sleep(3600)
             return False
         elif "400" in str(e):
-            logging.error(f"X API tweeti reddetti, karakter sınırı veya içerik sorunu: {e}, Hata Detayı: {error_details}")
+            logging.error(f"X API tweet reddetti: {e}, Detay: {error_details}")
             return False
         elif "401" in str(e):
-            logging.error(f"X API kimlik doğrulama hatası: {e}, Hata Detayı: {error_details}")
+            logging.error(f"X API kimlik doğrulama hatası: {e}, Detay: {error_details}")
             return False
         else:
-            logging.error(f"Tweet gönderimi başarısız: {e}, Hata Detayı: {error_details}")
+            logging.error(f"Tweet başarısız: {e}, Detay: {error_details}")
             return False
     except Exception as e:
-        logging.error(f"Tweet gönderimi başarısız: {e}")
+        logging.error(f"Tweet başarısız: {e}")
         return False
 
 def schedule_tweets():
-    """Tweet’leri ~96 dakikada bir (günde 15 tweet) planla."""
     scheduler = BackgroundScheduler(timezone="UTC")
-    scheduler.add_job(post_tweet, 'interval', seconds=5760)
+    scheduler.add_job(post_tweet, 'interval', seconds=5760)  # 96 dk, 15 tweet/gün
     scheduler.start()
 
 def main():
     logging.info("Solium Bot başlatılıyor...")
-    
-    initial_tweet = f"{WEBSITE_URL} Solium Coin presale extended! 🚨 Don’t miss out, join with BNB now via Binance Web3 Wallet, KuCoin Web3 Wallet, or MetaMask! Aligned with top exchanges, launching by Sep, possibly Jul if sales soar! Any moment, we could hit major exchanges! Solium, sparked by love in Dubai! 😍 Merging BSC & Solana for fast DeFi! 🚀 Why Choose Solium? BSC-Solana bridge for unmatched speed! 🔥 #SoliumArmy’s DAO gives you power! 😎 Easy BNB via Web3 Wallets! 💪 Exchange protocols signed! Join with BNB now! Explore: {WEBSITE_URL} #Solium #Web3 #DeFi #Crypto #Binance"
-    try:
-        response = client_x.create_tweet(text=initial_tweet)
-        logging.info(f"İlk tweet gönderildi: {initial_tweet[:60]}... ({len(initial_tweet)} karakter), Tweet ID: {response.data['id']}")
-    except tweepy.TweepyException as e:
-        logging.error(f"İlk tweet başarısız, hata: {e}, Hata Detayı: {getattr(e, 'api_errors', str(e))}")
-    except Exception as e:
-        logging.error(f"İlk tweet başarısız: {e}")
+    # İlk tweet için direkt Grok içeriği
+    if not post_tweet():
+        logging.error("İlk tweet gönderimi başarısız, bot devam ediyor")
     
     schedule_tweets()
     try:
         while True:
             time.sleep(60)
     except KeyboardInterrupt:
-        logging.info("Bot kullanıcı tarafından durduruldu")
+        logging.info("Bot durduruldu")
 
 if __name__ == "__main__":
     try:
